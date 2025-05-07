@@ -161,7 +161,7 @@ export function SiteHeader() {
                 size="sm"
                 className="bg-gradient-to-r from-primary to-emerald-600 hover:opacity-90"
               >
-                <Link href="/register">Get started</Link>
+                <Link href="/login">Get started</Link>
               </Button>
             </div>
           )}
