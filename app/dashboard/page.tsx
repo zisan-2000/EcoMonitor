@@ -448,13 +448,11 @@ export default function Dashboard() {
           </div>
         </TabsContent>
 
-        <TabsContent value="individual-charts" className="mt-6 space-y-4">
+        <TabsContent value="individual-charts" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Individual Metrics</CardTitle>
-              <CardDescription>
-                Detailed view of each environmental metric
-              </CardDescription>
+              <CardDescription>Detailed view of each environmental metric</CardDescription>
             </CardHeader>
             <CardContent>
               <AllMetricsCharts />

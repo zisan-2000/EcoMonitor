@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   LineChart,
   Line,
@@ -13,63 +13,102 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-} from "recharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DatePickerWithRange } from "@/components/date-range-picker"
-import { FlaskRoundIcon as Flask, Waves, MapPin, Download, RefreshCw } from "lucide-react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+} from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DatePickerWithRange } from "@/components/date-range-picker";
+import {
+  FlaskRoundIcon as Flask,
+  Waves,
+  MapPin,
+  Download,
+  RefreshCw,
+} from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function WaterQualityPanel({ data }) {
-  const [timeRange, setTimeRange] = useState("24h")
-  const [chartData, setChartData] = useState([])
-  const [doLevelsData, setDoLevelsData] = useState([])
-  const [mapCenter, setMapCenter] = useState([22.5134, 91.8446])
-  const [selectedParameter, setSelectedParameter] = useState("all")
-  const [tableData, setTableData] = useState([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(10)
+  const [timeRange, setTimeRange] = useState("24h");
+  const [chartData, setChartData] = useState([]);
+  const [doLevelsData, setDoLevelsData] = useState([]);
+  const [mapCenter, setMapCenter] = useState([22.5134, 91.8446]);
+  const [selectedParameter, setSelectedParameter] = useState("all");
+  const [tableData, setTableData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     if (data.length > 0) {
       // Process data for charts
-      const processedData = data.slice(-24).map((item) => {
-        return {
-          time: item.times || "00:00",
-          temp: Number.parseFloat(item.temp || 0),
-          ph: Number.parseFloat(item.ph || 7),
-          orp: Number.parseFloat(item.orp || 0),
-          do: Number.parseFloat(item.do || 0),
-          sal: Number.parseFloat(item.sal || 0),
-        }
-      })
+      const processedData = data.slice(-24).map((item) => ({
+        time: item.times || "00:00",
+        temp: parseFloat(item.temp || 0),
+        ph: parseFloat(item.ph || 0),
+        orp: parseFloat(item.orp || 0),
+        do: parseFloat(item.do || 0),
+        sal: parseFloat(item.sal || 0),
+        cond: parseFloat(item.cond || 0),
+        spd: parseFloat(item.spd || 0),
+        temp2: parseFloat(item.temp2 || 0),
+        ph2: parseFloat(item.ph2 || 0),
+        orp2: parseFloat(item.orp2 || 0),
+        do2: parseFloat(item.do2 || 0),
+      }));
 
-      setChartData(processedData)
+      setChartData(processedData);
 
       // Process DO levels data for bar chart
-      const doData = []
+      const doData = [];
       for (let i = 0; i < 24; i++) {
-        const hour = i < 10 ? `0${i}:00` : `${i}:00`
-        const value = data.find((item) => item.times && item.times.startsWith(hour))
+        const hour = i < 10 ? `0${i}:00` : `${i}:00`;
+        const value = data.find(
+          (item) => item.times && item.times.startsWith(hour)
+        );
 
         doData.push({
           hour,
           do: value ? Number.parseFloat(value.do || 0) : Math.random() * 10,
-        })
+        });
       }
 
-      setDoLevelsData(doData)
+      setDoLevelsData(doData);
 
       // Set map center from the latest data point with coordinates
       const latestWithCoords = data.findLast(
-        (item) => item.lat && item.lon && !isNaN(Number.parseFloat(item.lat)) && !isNaN(Number.parseFloat(item.lon)),
-      )
+        (item) =>
+          item.lat &&
+          item.lon &&
+          !isNaN(Number.parseFloat(item.lat)) &&
+          !isNaN(Number.parseFloat(item.lon))
+      );
 
       if (latestWithCoords) {
-        setMapCenter([Number.parseFloat(latestWithCoords.lat), Number.parseFloat(latestWithCoords.lon)])
+        setMapCenter([
+          Number.parseFloat(latestWithCoords.lat),
+          Number.parseFloat(latestWithCoords.lon),
+        ]);
       }
 
       // Prepare table data
@@ -78,56 +117,67 @@ export default function WaterQualityPanel({ data }) {
           id: item.id || "N/A",
           date: item.dates || "N/A",
           time: item.times || "N/A",
-          temp: Number.parseFloat(item.temp || 0).toFixed(2),
-          ph: Number.parseFloat(item.ph || 0).toFixed(2),
-          orp: Number.parseFloat(item.orp || 0).toFixed(2),
-          do: Number.parseFloat(item.do || 0).toFixed(2),
-          sal: Number.parseFloat(item.sal || 0).toFixed(2),
-          location: `${Number.parseFloat(item.lat || 0).toFixed(4)}, ${Number.parseFloat(item.lon || 0).toFixed(4)}`,
-        })),
-      )
+          temp: parseFloat(item.temp || 0).toFixed(2),
+          ph: parseFloat(item.ph || 0).toFixed(2),
+          orp: parseFloat(item.orp || 0).toFixed(2),
+          do: parseFloat(item.do || 0).toFixed(2),
+          sal: parseFloat(item.sal || 0).toFixed(2),
+          cond: parseFloat(item.cond || 0).toFixed(2),
+          spd: parseFloat(item.spd || 0).toFixed(2),
+          temp2: parseFloat(item.temp2 || 0).toFixed(2),
+          ph2: parseFloat(item.ph2 || 0).toFixed(2),
+          orp2: parseFloat(item.orp2 || 0).toFixed(2),
+          do2: parseFloat(item.do2 || 0).toFixed(2),
+          scnt: item.scnt,
+          location: `${parseFloat(item.lat || 0).toFixed(4)}, ${parseFloat(
+            item.lon || 0
+          ).toFixed(4)}`,
+        }))
+      );
     }
-  }, [data])
+  }, [data]);
 
   // Function to get color based on parameter value
   const getParameterColor = (param) => {
     switch (param) {
       case "temp":
-        return "#FF5722"
+        return "#FF5722";
       case "ph":
-        return "#4CAF50"
+        return "#4CAF50";
       case "orp":
-        return "#2196F3"
+        return "#2196F3";
       case "do":
-        return "#9C27B0"
+        return "#9C27B0";
       case "sal":
-        return "#FFC107"
+        return "#FFC107";
       default:
-        return "#000000"
+        return "#000000";
     }
-  }
+  };
 
   // Filter and paginate table data
   const filteredData = tableData.filter((item) =>
-    Object.values(item).some((value) => value.toString().toLowerCase().includes(searchTerm.toLowerCase())),
-  )
+    Object.values(item).some((value) =>
+      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1)
+      setCurrentPage(currentPage + 1);
     }
-  }
+  };
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1)
+      setCurrentPage(currentPage - 1);
     }
-  }
+  };
 
   return (
     <motion.div
@@ -154,7 +204,10 @@ export default function WaterQualityPanel({ data }) {
         </div>
 
         <div>
-          <Select value={selectedParameter} onValueChange={setSelectedParameter}>
+          <Select
+            value={selectedParameter}
+            onValueChange={setSelectedParameter}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select parameter" />
             </SelectTrigger>
@@ -177,12 +230,17 @@ export default function WaterQualityPanel({ data }) {
               <Flask className="h-5 w-5" />
               Water Quality Parameters
             </CardTitle>
-            <CardDescription>Temperature, pH, ORP, DO, and Salinity over time</CardDescription>
+            <CardDescription>
+              Temperature, pH, ORP, DO, and Salinity over time
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <LineChart
+                  data={chartData}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                   <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
@@ -195,7 +253,8 @@ export default function WaterQualityPanel({ data }) {
                     }}
                   />
                   <Legend />
-                  {(selectedParameter === "all" || selectedParameter === "temp") && (
+                  {(selectedParameter === "all" ||
+                    selectedParameter === "temp") && (
                     <Line
                       type="monotone"
                       dataKey="temp"
@@ -206,7 +265,8 @@ export default function WaterQualityPanel({ data }) {
                       name="Temperature (°C)"
                     />
                   )}
-                  {(selectedParameter === "all" || selectedParameter === "ph") && (
+                  {(selectedParameter === "all" ||
+                    selectedParameter === "ph") && (
                     <Line
                       type="monotone"
                       dataKey="ph"
@@ -217,7 +277,8 @@ export default function WaterQualityPanel({ data }) {
                       name="pH"
                     />
                   )}
-                  {(selectedParameter === "all" || selectedParameter === "orp") && (
+                  {(selectedParameter === "all" ||
+                    selectedParameter === "orp") && (
                     <Line
                       type="monotone"
                       dataKey="orp"
@@ -228,7 +289,8 @@ export default function WaterQualityPanel({ data }) {
                       name="ORP (mV)"
                     />
                   )}
-                  {(selectedParameter === "all" || selectedParameter === "do") && (
+                  {(selectedParameter === "all" ||
+                    selectedParameter === "do") && (
                     <Line
                       type="monotone"
                       dataKey="do"
@@ -239,7 +301,8 @@ export default function WaterQualityPanel({ data }) {
                       name="DO (mg/L)"
                     />
                   )}
-                  {(selectedParameter === "all" || selectedParameter === "sal") && (
+                  {(selectedParameter === "all" ||
+                    selectedParameter === "sal") && (
                     <Line
                       type="monotone"
                       dataKey="sal"
@@ -267,15 +330,32 @@ export default function WaterQualityPanel({ data }) {
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={doLevelsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <BarChart
+                  data={doLevelsData}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                  <XAxis dataKey="hour" tick={{ fontSize: 12 }} tickFormatter={(value) => value.split(":")[0]} />
+                  <XAxis
+                    dataKey="hour"
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => value.split(":")[0]}
+                  />
                   <YAxis
                     tick={{ fontSize: 12 }}
-                    label={{ value: "DO (mg/L)", angle: -90, position: "insideLeft", style: { textAnchor: "middle" } }}
+                    label={{
+                      value: "DO (mg/L)",
+                      angle: -90,
+                      position: "insideLeft",
+                      style: { textAnchor: "middle" },
+                    }}
                   />
                   <RechartsTooltip />
-                  <Bar dataKey="do" fill="#9C27B0" radius={[4, 4, 0, 0]} name="Dissolved Oxygen" />
+                  <Bar
+                    dataKey="do"
+                    fill="#9C27B0"
+                    radius={[4, 4, 0, 0]}
+                    name="Dissolved Oxygen"
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -288,7 +368,9 @@ export default function WaterQualityPanel({ data }) {
               <MapPin className="h-5 w-5" />
               Sensor Location
             </CardTitle>
-            <CardDescription>Geographic location of water quality sensors</CardDescription>
+            <CardDescription>
+              Geographic location of water quality sensors
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px] rounded-md overflow-hidden">
@@ -344,47 +426,57 @@ export default function WaterQualityPanel({ data }) {
                   <TableHead>ID</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Time</TableHead>
-                  <TableHead>Temp (°C)</TableHead>
+                  <TableHead>Temp</TableHead>
                   <TableHead>pH</TableHead>
-                  <TableHead>ORP (mV)</TableHead>
-                  <TableHead>DO (mg/L)</TableHead>
+                  <TableHead>ORP</TableHead>
+                  <TableHead>DO</TableHead>
                   <TableHead>Salinity</TableHead>
+                  <TableHead>Cond</TableHead>
+                  <TableHead>Spd</TableHead>
+                  <TableHead>Temp2</TableHead>
+                  <TableHead>pH2</TableHead>
+                  <TableHead>ORP2</TableHead>
+                  <TableHead>DO2</TableHead>
                   <TableHead>Location</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {currentItems.length > 0 ? (
-                  currentItems.map((item, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{item.id}</TableCell>
-                      <TableCell>{item.date}</TableCell>
-                      <TableCell>{item.time}</TableCell>
-                      <TableCell>{item.temp}</TableCell>
-                      <TableCell>{item.ph}</TableCell>
-                      <TableCell>{item.orp}</TableCell>
-                      <TableCell>{item.do}</TableCell>
-                      <TableCell>{item.sal}</TableCell>
-                      <TableCell className="font-mono text-xs">{item.location}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={9} className="text-center py-4">
-                      No data found
-                    </TableCell>
+                {currentItems.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{item.id}</TableCell>
+                    <TableCell>{item.date}</TableCell>
+                    <TableCell>{item.time}</TableCell>
+                    <TableCell>{item.temp}</TableCell>
+                    <TableCell>{item.ph}</TableCell>
+                    <TableCell>{item.orp}</TableCell>
+                    <TableCell>{item.do}</TableCell>
+                    <TableCell>{item.sal}</TableCell>
+                    <TableCell>{item.cond}</TableCell>
+                    <TableCell>{item.spd}</TableCell>
+                    <TableCell>{item.temp2}</TableCell>
+                    <TableCell>{item.ph2}</TableCell>
+                    <TableCell>{item.orp2}</TableCell>
+                    <TableCell>{item.do2}</TableCell>
+                    <TableCell>{item.location}</TableCell>
                   </TableRow>
-                )}
+                ))}
               </TableBody>
             </Table>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredData.length)} of {filteredData.length}{" "}
-            entries
+            Showing {indexOfFirstItem + 1}-
+            {Math.min(indexOfLastItem, filteredData.length)} of{" "}
+            {filteredData.length} entries
           </div>
           <div className="flex gap-1">
-            <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={currentPage === 1}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+            >
               Previous
             </Button>
             <Button
@@ -399,5 +491,5 @@ export default function WaterQualityPanel({ data }) {
         </CardFooter>
       </Card>
     </motion.div>
-  )
+  );
 }

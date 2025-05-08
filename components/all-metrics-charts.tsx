@@ -1,114 +1,56 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Expand, TableIcon, BarChartIcon } from "lucide-react";
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Expand, TableIcon, BarChartIcon } from "lucide-react"
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
 export function AllMetricsCharts() {
-  const [data, setData] = useState<any[]>([]);
-  const [columns, setColumns] = useState<string[]>([]);
-  const [timeColumn, setTimeColumn] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
+  const [data, setData] = useState<any[]>([])
+  const [columns, setColumns] = useState<string[]>([])
+  const [timeColumn, setTimeColumn] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [fullScreenChart, setFullScreenChart] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
+      setIsLoading(true)
       try {
-        // For demo purposes, generate sample data
-        const sampleData = Array.from({ length: 24 }, (_, i) => {
-          const hour = i;
-          const baseTemp = 20 + Math.sin(i / 3) * 5;
-          const randomFactor = Math.random() * 2 - 1;
+        const response = await fetch("/api/fetch-csv")
+        if (!response.ok) {
+          throw new Error(`Failed to fetch data: ${response.status}`)
+        }
 
-          return {
-            timestamp: `${hour.toString().padStart(2, "0")}:00`,
-            temperature: +(baseTemp + randomFactor).toFixed(1),
-            humidity: +(60 + Math.sin(i / 2) * 15 + Math.random() * 5).toFixed(
-              1
-            ),
-            air_quality: +(
-              50 +
-              Math.sin(i / 4) * 20 +
-              Math.random() * 10
-            ).toFixed(1),
-            wind_speed: +(5 + Math.sin(i / 6) * 3 + Math.random() * 2).toFixed(
-              1
-            ),
-            wind_direction: Math.floor(Math.random() * 360),
-            precipitation:
-              Math.random() > 0.8 ? +(Math.random() * 2).toFixed(1) : 0,
-            solar_radiation:
-              hour >= 6 && hour <= 18
-                ? +(
-                    Math.sin(((hour - 6) / 12) * Math.PI) * 800 +
-                    Math.random() * 100
-                  ).toFixed(1)
-                : 0,
-            pressure: +(1013 + Math.sin(i / 8) * 5 + Math.random() * 2).toFixed(
-              1
-            ),
-          };
-        });
+        const result = await response.json()
+        if (!result.data || !Array.isArray(result.data) || result.data.length === 0) {
+          throw new Error("No data received from the server")
+        }
 
-        setData(sampleData);
-        setColumns([
-          "timestamp",
-          "temperature",
-          "humidity",
-          "air_quality",
-          "wind_speed",
-          "wind_direction",
-          "precipitation",
-          "solar_radiation",
-          "pressure",
-        ]);
-        setTimeColumn("timestamp");
+        setData(result.data)
+        setColumns(result.columns)
+        setTimeColumn(result.timeColumn || result.columns[0])
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching data:", error)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   // Get numeric columns
   const numericColumns = columns.filter((column) => {
     // Skip the time column
-    if (column === timeColumn) return false;
+    if (column === timeColumn) return false
 
     // Check if the column contains numeric values
-    return data.some(
-      (row) => typeof row[column] === "number" && !isNaN(row[column])
-    );
-  });
+    return data.some((row) => typeof row[column] === "number" && !isNaN(row[column]))
+  })
 
   // Get a friendly display name for a column
   const getDisplayName = (column: string) => {
@@ -117,69 +59,53 @@ export function AllMetricsCharts() {
       .replace(/_/g, " ")
       .replace(/([A-Z])/g, " $1")
       .replace(/^./, (str) => str.toUpperCase())
-      .trim();
-  };
+      .trim()
+  }
 
   // Get color for a column
   const getColorForColumn = (column: string) => {
-    const lowerColumn = column.toLowerCase();
-    if (lowerColumn.includes("temp")) return "#ef4444"; // red
-    if (lowerColumn.includes("humid")) return "#3b82f6"; // blue
-    if (lowerColumn.includes("wind")) return "#64748b"; // slate
-    if (lowerColumn.includes("solar")) return "#eab308"; // yellow
-    if (lowerColumn.includes("air") || lowerColumn.includes("quality"))
-      return "#10b981"; // green
-    if (lowerColumn.includes("precipitation")) return "#60a5fa"; // blue-400
-    if (lowerColumn.includes("pressure")) return "#8b5cf6"; // purple
+    const lowerColumn = column.toLowerCase()
+    if (lowerColumn.includes("temp")) return "#ef4444" // red
+    if (lowerColumn.includes("humid")) return "#3b82f6" // blue
+    if (lowerColumn.includes("wind")) return "#64748b" // slate
+    if (lowerColumn.includes("solar")) return "#eab308" // yellow
+    if (lowerColumn.includes("air") || lowerColumn.includes("quality")) return "#10b981" // green
+    if (lowerColumn.includes("precipitation")) return "#60a5fa" // blue-400
+    if (lowerColumn.includes("pressure")) return "#8b5cf6" // purple
 
     // Generate a color based on the column name for consistency
     const hash = column.split("").reduce((acc, char) => {
-      return char.charCodeAt(0) + ((acc << 5) - acc);
-    }, 0);
+      return char.charCodeAt(0) + ((acc << 5) - acc)
+    }, 0)
 
-    return `hsl(${Math.abs(hash) % 360}, 70%, 50%)`;
-  };
+    return `hsl(${Math.abs(hash) % 360}, 70%, 50%)`
+  }
 
   // Format the X-axis tick values
   const formatXAxis = (value: any) => {
-    if (value === undefined || value === null) return "";
+    if (value === undefined || value === null) return ""
 
     // If it's a date string, format it
-    if (
-      typeof value === "string" &&
-      value.includes("-") &&
-      value.includes(":")
-    ) {
+    if (typeof value === "string" && value.includes("-") && value.includes(":")) {
       try {
-        const date = new Date(value);
-        return date.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+        const date = new Date(value)
+        return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       } catch (e) {
         // If parsing fails, just return the original value
-        return String(value).substring(0, 10);
+        return String(value).substring(0, 10)
       }
     }
 
     // For other types, convert to string and truncate
-    return String(value).substring(0, 10);
-  };
+    return String(value).substring(0, 10)
+  }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-80">
-        Loading data...
-      </div>
-    );
+    return <div className="flex items-center justify-center h-80">Loading data...</div>
   }
 
   if (data.length === 0) {
-    return (
-      <div className="text-center py-8">
-        No data available. Please check your data source.
-      </div>
-    );
+    return <div className="text-center py-8">No data available. Please check your data source.</div>
   }
 
   return (
@@ -189,12 +115,7 @@ export function AllMetricsCharts() {
           <Card key={column}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle>{getDisplayName(column)}</CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setFullScreenChart(column)}
-                title="View Full Screen"
-              >
+              <Button variant="ghost" size="icon" onClick={() => setFullScreenChart(column)} title="View Full Screen">
                 <Expand className="h-4 w-4" />
               </Button>
             </CardHeader>
@@ -224,11 +145,7 @@ export function AllMetricsCharts() {
                         }}
                       >
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis
-                          dataKey={timeColumn}
-                          tickFormatter={formatXAxis}
-                          minTickGap={30}
-                        />
+                        <XAxis dataKey={timeColumn} tickFormatter={formatXAxis} minTickGap={30} />
                         <YAxis />
                         <Tooltip
                           formatter={(value) => [value, getDisplayName(column)]}
@@ -281,15 +198,10 @@ export function AllMetricsCharts() {
       </div>
 
       {/* Full Screen Chart Dialog */}
-      <Dialog
-        open={fullScreenChart !== null}
-        onOpenChange={(open) => !open && setFullScreenChart(null)}
-      >
+      <Dialog open={fullScreenChart !== null} onOpenChange={(open) => !open && setFullScreenChart(null)}>
         <DialogContent className="max-w-5xl w-[90vw] max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>
-              {fullScreenChart ? getDisplayName(fullScreenChart) : ""}
-            </DialogTitle>
+            <DialogTitle>{fullScreenChart ? getDisplayName(fullScreenChart) : ""}</DialogTitle>
           </DialogHeader>
           {fullScreenChart && (
             <div className="flex-1 min-h-[500px]">
@@ -318,16 +230,10 @@ export function AllMetricsCharts() {
                         }}
                       >
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis
-                          dataKey={timeColumn}
-                          tickFormatter={formatXAxis}
-                        />
+                        <XAxis dataKey={timeColumn} tickFormatter={formatXAxis} />
                         <YAxis />
                         <Tooltip
-                          formatter={(value) => [
-                            value,
-                            getDisplayName(fullScreenChart),
-                          ]}
+                          formatter={(value) => [value, getDisplayName(fullScreenChart)]}
                           labelFormatter={(label) => `Time: ${label}`}
                         />
                         <Line
@@ -350,9 +256,7 @@ export function AllMetricsCharts() {
                       <TableHeader className="sticky top-0 bg-background">
                         <TableRow>
                           <TableHead>{getDisplayName(timeColumn)}</TableHead>
-                          <TableHead>
-                            {getDisplayName(fullScreenChart)}
-                          </TableHead>
+                          <TableHead>{getDisplayName(fullScreenChart)}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -378,5 +282,5 @@ export function AllMetricsCharts() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }
