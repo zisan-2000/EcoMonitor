@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
@@ -26,6 +25,9 @@ import {
   XCircle,
   Download,
   RefreshCw,
+  Thermometer,
+  AirVent,
+  Wind,
 } from "lucide-react";
 import SummaryCards from "@/components/summary-cards";
 import { fetchWeatherData, fetchWaterQualityData } from "@/lib/data";
@@ -60,7 +62,6 @@ export default function Dashboard() {
         // Fetch data
         const weather = await fetchWeatherData();
         const water = await fetchWaterQualityData();
-
         setWeatherData(weather);
         setWaterData(water);
 
@@ -71,14 +72,12 @@ export default function Dashboard() {
           storage: { used: 1.2, total: 5, percent: 24 },
           server: { status: "online", uptime: "99.9%", load: 32 },
         });
-
         setIsLoading(false);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
         setIsLoading(false);
       }
     };
-
     loadData();
   }, []);
 
@@ -214,7 +213,6 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Sensors</CardTitle>
@@ -246,7 +244,6 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Storage</CardTitle>
@@ -270,7 +267,6 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -309,13 +305,32 @@ export default function Dashboard() {
 
       {/* New Environmental Data Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="individual-charts">Individual Charts</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 bg-gray-100 dark:bg-gray-800">
+          <TabsTrigger
+            value="overview"
+            className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-gray-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-gray-900"
+          >
+            Overview
+          </TabsTrigger>
+          <TabsTrigger
+            value="individual-charts"
+            className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-gray-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-gray-900"
+          >
+            Individual Charts
+          </TabsTrigger>
+          <TabsTrigger
+            value="analytics"
+            className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-gray-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-gray-900"
+          >
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger
+            value="activity"
+            className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-gray-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-gray-900"
+          >
+            Activity
+          </TabsTrigger>
         </TabsList>
-
         <TabsContent value="overview" className="mt-6 space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
@@ -323,18 +338,7 @@ export default function Dashboard() {
                 <CardTitle className="text-sm font-medium">
                   Temperature
                 </CardTitle>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-4 w-4 text-red-500"
-                >
-                  <path d="M14.5 4.5a3.5 3.5 0 0 0-7 0v9.5a5 5 0 1 0 7 0Z" />
-                </svg>
+                <Thermometer className="h-4 w-4 text-red-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">24.5°C</div>
@@ -346,19 +350,7 @@ export default function Dashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Humidity</CardTitle>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-4 w-4 text-blue-500"
-                >
-                  <path d="M8 2a.5.5 0 0 1 .5.5V4a.5.5 0 0 1-1 0V2.5A.5.5 0 0 1 8 2zM3.732 3.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 8a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 8zm9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5zm.754-4.246a.389.389 0 0 0-.527-.02L7.547 7.31A.91.91 0 1 0 8.85 8.569l3.434-4.297a.389.389 0 0 0-.029-.518z" />
-                  <path d="M6.664 15.889A8 8 0 1 1 9.336.11a8 8 0 0 1-2.672 15.78zm-4.665-4.283A11.945 11.945 0 0 1 8 10c2.186 0 4.236.585 6.001 1.606a7 7 0 1 0-12.002 0z" />
-                </svg>
+                <CloudRain className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">68%</div>
@@ -372,22 +364,7 @@ export default function Dashboard() {
                 <CardTitle className="text-sm font-medium">
                   Air Quality
                 </CardTitle>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-4 w-4 text-green-500"
-                >
-                  <path d="M12 3v19" />
-                  <path d="M5 8c1.5 0 2.5-1.5 2.5-3S6.5 2 5 2 2.5 3.5 2.5 5 3.5 8 5 8Z" />
-                  <path d="M5 16c1.5 0 2.5-1.5 2.5-3S6.5 10 5 10s-2.5 1.5-2.5 3 1 3 2.5 3Z" />
-                  <path d="M19 8c1.5 0 2.5-1.5 2.5-3S20.5 2 19 2s-2.5 1.5-2.5 3 1 3 2.5 3Z" />
-                  <path d="M19 16c1.5 0 2.5-1.5 2.5-3s-1-3-2.5-3-2.5 1.5-2.5 3 1 3 2.5 3Z" />
-                </svg>
+                <AirVent className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">Good</div>
@@ -401,20 +378,7 @@ export default function Dashboard() {
                 <CardTitle className="text-sm font-medium">
                   Wind Speed
                 </CardTitle>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-4 w-4 text-slate-500"
-                >
-                  <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" />
-                  <path d="M9.6 4.6A2 2 0 1 1 11 8H2" />
-                  <path d="M12.6 19.4A2 2 0 1 0 14 16H2" />
-                </svg>
+                <Wind className="h-4 w-4 text-slate-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">8.3 km/h</div>
@@ -424,7 +388,6 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
-
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-4">
               <CardHeader>
@@ -447,7 +410,6 @@ export default function Dashboard() {
             </Card>
           </div>
         </TabsContent>
-
         <TabsContent value="individual-charts" className="mt-6 space-y-4">
           <Card>
             <CardHeader>
@@ -461,7 +423,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="analytics" className="mt-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card className="col-span-2">
@@ -504,7 +465,6 @@ export default function Dashboard() {
             </Card>
           </div>
         </TabsContent>
-
         <TabsContent value="activity" className="mt-6 space-y-4">
           <Card>
             <CardHeader>
@@ -523,7 +483,7 @@ export default function Dashboard() {
       {/* Original System Management Tabs */}
       <Tabs defaultValue="overview" className="w-full mt-8">
         <TabsList
-          className="grid w-full"
+          className="grid w-full bg-gray-100 dark:bg-gray-800"
           style={{
             gridTemplateColumns: `repeat(${
               1 + // Overview tab
@@ -533,18 +493,37 @@ export default function Dashboard() {
             }, minmax(0, 1fr))`,
           }}
         >
-          <TabsTrigger value="overview">System Overview</TabsTrigger>
+          <TabsTrigger
+            value="overview"
+            className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-gray-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-gray-900"
+          >
+            System Overview
+          </TabsTrigger>
           {canAccess("users") && (
-            <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger
+              value="users"
+              className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-gray-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-gray-900"
+            >
+              User Management
+            </TabsTrigger>
           )}
           {canAccess("logs") && (
-            <TabsTrigger value="system">System Status</TabsTrigger>
+            <TabsTrigger
+              value="system"
+              className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-gray-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-gray-900"
+            >
+              System Status
+            </TabsTrigger>
           )}
           {canAccess("logs") && (
-            <TabsTrigger value="logs">System Logs</TabsTrigger>
+            <TabsTrigger
+              value="logs"
+              className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-gray-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-gray-900"
+            >
+              System Logs
+            </TabsTrigger>
           )}
         </TabsList>
-
         <TabsContent value="overview" className="mt-6 space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             {canAccess("weather") && (
@@ -574,7 +553,6 @@ export default function Dashboard() {
                           : "N/A"}
                       </p>
                     </div>
-
                     <div>
                       <h4 className="text-sm font-medium mb-2">
                         Latest Readings
@@ -604,15 +582,17 @@ export default function Dashboard() {
                         </p>
                       )}
                     </div>
-
-                    <Button variant="outline" size="sm" className="w-full">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-transparent"
+                    >
                       View Full Weather Data
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             )}
-
             {canAccess("water") && (
               <Card>
                 <CardHeader>
@@ -640,7 +620,6 @@ export default function Dashboard() {
                           : "N/A"}
                       </p>
                     </div>
-
                     <div>
                       <h4 className="text-sm font-medium mb-2">
                         Latest Readings
@@ -672,8 +651,11 @@ export default function Dashboard() {
                         </p>
                       )}
                     </div>
-
-                    <Button variant="outline" size="sm" className="w-full">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-transparent"
+                    >
                       View Full Water Quality Data
                     </Button>
                   </div>
@@ -681,7 +663,6 @@ export default function Dashboard() {
               </Card>
             )}
           </div>
-
           {(canAccess("logs") || user?.role === "super_admin") && (
             <Card>
               <CardHeader>
@@ -703,7 +684,6 @@ export default function Dashboard() {
                     </p>
                     <Progress value={75} className="h-2" />
                   </div>
-
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium">Data Processing</h4>
                     <div className="text-2xl font-bold">3.2 GB</div>
@@ -712,7 +692,6 @@ export default function Dashboard() {
                     </p>
                     <Progress value={45} className="h-2" />
                   </div>
-
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium">Active Sessions</h4>
                     <div className="text-2xl font-bold">42</div>
@@ -726,7 +705,6 @@ export default function Dashboard() {
             </Card>
           )}
         </TabsContent>
-
         {canAccess("users") && (
           <TabsContent value="users" className="mt-6">
             <Card>
@@ -747,7 +725,6 @@ export default function Dashboard() {
             </Card>
           </TabsContent>
         )}
-
         {canAccess("logs") && (
           <TabsContent value="system" className="mt-6">
             <Card>
@@ -800,7 +777,6 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-
                   <div>
                     <h3 className="text-lg font-medium mb-4">Sensor Network</h3>
                     <div className="grid gap-4 md:grid-cols-2">
@@ -838,7 +814,6 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-
                   <div>
                     <h3 className="text-lg font-medium mb-4">
                       System Resources
@@ -871,7 +846,6 @@ export default function Dashboard() {
             </Card>
           </TabsContent>
         )}
-
         {canAccess("logs") && (
           <TabsContent value="logs" className="mt-6">
             <Card>

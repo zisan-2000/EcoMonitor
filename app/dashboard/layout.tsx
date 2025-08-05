@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getUser, getUserPermissions, signOut } from "@/lib/auth";
 import { Toaster } from "@/components/ui/toaster";
+import "leaflet/dist/leaflet.css";
 
 export default function DashboardLayout({ children }) {
   const { theme, setTheme } = useTheme();
