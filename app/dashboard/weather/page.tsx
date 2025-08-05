@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { fetchWeatherData, fetchWaterQualityData } from "@/lib/data"
 import WeatherPanel from "@/components/weather-panel"
 import { Activity } from "lucide-react"
 
@@ -14,21 +13,27 @@ export default function WeatherPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Fetch data
-        const weather = await fetchWeatherData()
-        const water = await fetchWaterQualityData()
+        const response = await fetch("/api/fetch-csv")
+        const result = await response.json()
 
-        setWeatherData(weather)
-        setWaterData(water)
-        setIsLoading(false)
+        if (response.ok) {
+          setWeatherData(result.data || [])
+        } else {
+          console.error("Failed to fetch weather data:", result.error)
+        }
+
+        // You can also fetch waterData here if needed
+        setWaterData([]) // placeholder
       } catch (error) {
-        console.error("Error loading weather data:", error)
+        console.error("Error loading data:", error)
+      } finally {
         setIsLoading(false)
       }
     }
 
     loadData()
   }, [])
+
 
   if (isLoading) {
     return (
@@ -41,6 +46,7 @@ export default function WeatherPage() {
     )
   }
 
+  console.log("Weather Data:", weatherData);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -53,7 +59,7 @@ export default function WeatherPage() {
         <p className="text-muted-foreground">Comprehensive weather data analysis and visualization</p>
       </div>
 
-      <WeatherPanel data={weatherData} waterData={waterData} />
+      <WeatherPanel data={weatherData} />
     </motion.div>
   )
 }

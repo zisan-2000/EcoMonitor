@@ -1,55 +1,113 @@
+// import { NextResponse } from "next/server";
+// import fs from "fs";
+// import path from "path";
+// import { parse } from "csv-parse/sync";
+
+// export async function GET() {
+//   try {
+//     const csvFilePath = path.join(process.cwd(), "data", "cvs-data.csv");
+//     const fileContent = fs.readFileSync(csvFilePath, "utf8");
+
+//     // Parse CSV with relaxed column count to avoid errors
+//     const records = parse(fileContent, {
+//       columns: true,
+//       skip_empty_lines: true,
+//       relax_column_count: true, // Allow inconsistent rows
+//       on_record: (record) => {
+//         // Filter out rows with invalid SysCode or missing required fields
+//         if (
+//           ["ERR", "WDT", "CFG_MENU"].includes(record.SysCode) ||
+//           !record.Date || !record.Time
+//         ) return null;
+//         return record;
+//       },
+//     }).filter(Boolean); // Remove nulls
+
+//     const data = records.map((record) => ({
+//       timestamp: `${record.Date}T${record.Time}`,
+//       temperature: parseFloat(record["airTemperature"]) || null,
+//       humidity: Math.round(parseFloat(record["R.Humidity"]) * 100) || null,
+//       air_quality: 50, // Placeholder
+//       wind_speed: parseFloat(record["windSpeed"]) || null,
+//       wind_direction: parseFloat(record["windDirection"]) || null,
+//       precipitation: parseFloat(record["precipitation"]) || null,
+//       solar_radiation: parseFloat(record["solar"]) || null,
+//       pressure: parseFloat(record["atmosphericPressure"]) || null,
+//     }));
+
+//     return NextResponse.json({
+//       data,
+//       columns: [
+//         "timestamp",
+//         "temperature",
+//         "humidity",
+//         "air_quality",
+//         "wind_speed",
+//         "wind_direction",
+//         "precipitation",
+//         "solar_radiation",
+//         "pressure",
+//       ],
+//       timeColumn: "timestamp",
+//     });
+//   } catch (error) {
+//     console.error("Error reading CSV data:", error);
+//     return NextResponse.json({ error: "Failed to read CSV file" }, { status: 500 });
+//   }
+// }
+
+
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+import { parse } from "csv-parse/sync";
 
 export async function GET() {
   try {
-    // Generate sample data for demonstration
-    const sampleData = Array.from({ length: 24 }, (_, i) => {
-      const hour = i;
-      const baseTemp = 20 + Math.sin(i / 3) * 5;
-      const randomFactor = Math.random() * 2 - 1;
+    const csvFilePath = path.join(process.cwd(), "data", "cvs-data.csv");
+    const fileContent = fs.readFileSync(csvFilePath, "utf8");
 
-      return {
-        timestamp: `${hour.toString().padStart(2, "0")}:00`,
-        temperature: +(baseTemp + randomFactor).toFixed(1),
-        humidity: +(60 + Math.sin(i / 2) * 15 + Math.random() * 5).toFixed(1),
-        air_quality: +(50 + Math.sin(i / 4) * 20 + Math.random() * 10).toFixed(
-          1
-        ),
-        wind_speed: +(5 + Math.sin(i / 6) * 3 + Math.random() * 2).toFixed(1),
-        wind_direction: Math.floor(Math.random() * 360),
-        precipitation:
-          Math.random() > 0.8 ? +(Math.random() * 2).toFixed(1) : 0,
-        solar_radiation:
-          hour >= 6 && hour <= 18
-            ? +(
-                Math.sin(((hour - 6) / 12) * Math.PI) * 800 +
-                Math.random() * 100
-              ).toFixed(1)
-            : 0,
-        pressure: +(1013 + Math.sin(i / 8) * 5 + Math.random() * 2).toFixed(1),
-      };
-    });
+    const records = parse(fileContent, {
+      columns: true,
+      skip_empty_lines: true,
+      relax_column_count: true,
+      on_record: (record) => {
+        if (
+          ["ERR", "WDT", "CFG_MENU"].includes(record.SysCode) ||
+          !record.Date || !record.Time
+        ) return null;
+        return record;
+      },
+    }).filter(Boolean);
+
+    const data = records.map((record) => ({
+      timestamp: `${record.Date}T${record.Time}`,
+      solar: parseFloat(record.solar) || null,
+      precipitation: parseFloat(record.precipitation) || null,
+      strikes: parseInt(record.strikes) || 0,
+      strikeDistance: parseFloat(record.strikeDistance) || null,
+      windSpeed: parseFloat(record.windSpeed) || null,
+      windDirection: parseFloat(record.windDirection) || null,
+      gustWindSpeed: parseFloat(record.gustWindSpeed) || null,
+      airTemperature: parseFloat(record.airTemperature) || null,
+      vaporPressure: parseFloat(record["Vapor pressure"]) || null,
+      atmosphericPressure: parseFloat(record.atmosphericPressure) || null,
+      humidity: parseFloat(record["R.Humidity"]) || null,
+      sensorTemp: parseFloat(record.sensorTemp) || null,
+      xOrientation: parseFloat(record["X orintation"]) || null,
+      yOrientation: parseFloat(record["Y orintation"]) || null,
+      compassHeading: parseFloat(record.compassHeading) || null,
+      sysCode: record.SysCode || null,
+      sysMessage: record.SysMessage || null,
+    }));
 
     return NextResponse.json({
-      data: sampleData,
-      columns: [
-        "timestamp",
-        "temperature",
-        "humidity",
-        "air_quality",
-        "wind_speed",
-        "wind_direction",
-        "precipitation",
-        "solar_radiation",
-        "pressure",
-      ],
+      data,
+      columns: Object.keys(data[0]),
       timeColumn: "timestamp",
     });
   } catch (error) {
-    console.error("Error generating data:", error);
-    return NextResponse.json(
-      { error: "Failed to generate data" },
-      { status: 500 }
-    );
+    console.error("Error reading CSV data:", error);
+    return NextResponse.json({ error: "Failed to read CSV file" }, { status: 500 });
   }
 }
